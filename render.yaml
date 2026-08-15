@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: deo-teacher-backend
+    runtime: python
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: SUPABASE_URL
+        value: https://ukuuyfanhfhkjalcsijg.supabase.co
+      - key: SUPABASE_KEY
+        value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVrdXV5ZmFuaGZoa2phbGNzaWpnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NjY0NjcwNCwiZXhwIjoyMTAyMjIyNzA0fQ._u3RO5kaOnC51U9yHF9Ni-jirXnRL14cQpIZQ4GxICk
+      - key: DATABASE_URL
+        value: sqlite:///./teacher_management.db
+      - key: SECRET_KEY
+        value: deo-secret-key-change-in-production
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "1440"
+      - key: UPLOAD_MAX_SIZE
+        value: "5242880"
+      - key: USE_LOCAL_STORAGE
+        value: "false"
+      - key: FRONTEND_URL
+        value: https://deo-teacher-frontend.vercel.app
+      - key: ENCRYPTION_KEY
+        value: OtQgoqTuKw3FTGIXD4V8yPJaV667kkCNyXlqSf7B2bw=
+      - key: PYTHON_VERSION
+        value: 3.12.0
