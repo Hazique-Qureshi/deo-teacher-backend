@@ -3,7 +3,7 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Form, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-from jose import jwt
+from jose import jwt, JWTError
 from app.core.config import get_settings
 from app.core.security import verify_password, get_password_hash, create_access_token, create_refresh_token, validate_password_strength, get_current_active_user
 from app.core.encryption import encrypt_value, decrypt_value
@@ -242,14 +242,4 @@ async def logout(request: Request, refresh_token: str = Form(...), current_user:
     
     return {"message": "Logged out successfully"}
 
-@router.post("/login", response_model=Token)
-async def login(form_data: UserLogin, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.cnic == form_data.cnic).first()
-    if not user or not verify_password(form_data.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Invalid CNIC or password")
-    
-    token = create_access_token({"sub": user.cnic}, timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
-    log = ActivityLog(user_id=user.id, action="login", details="User logged in")
-    db.add(log)
-    db.commit()
-    return {"access_token": token, "token_type": "bearer", "user": UserResponse.from_orm(user)}
+

@@ -1,0 +1,22 @@
+# Environment variables - KABHI COMMIT MAT KARO
+.env
+.env.local
+.env.production
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+*.pyc
+*.pyo
+
+# Database
+*.db
+*.sqlite3
+
+# Uploads
+uploads/
+
+# IDE
+.vscode/
+.idea/

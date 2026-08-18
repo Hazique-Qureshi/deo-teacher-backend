@@ -71,7 +71,7 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 # Trusted Host
 app.add_middleware(
     TrustedHostMiddleware,
-    allowed_hosts=["localhost", "127.0.0.1", "*.onrender.com", "*.vercel.app", "deo-teacher-backend.onrender.com"]
+    allowed_hosts=["*"]
 )
 
 # CORS

@@ -18,9 +18,6 @@ from app.services.pdf_compressor import compress_pdf
 settings = get_settings()
 router = APIRouter(prefix="/api/teachers", tags=["Teachers"])
 
-def validate_pdf_content(file_bytes: bytes) -> bool:
-    mime = magic.from_buffer(file_bytes, mime=True)
-    return mime == "application/pdf"
 
 @router.get("/me", response_model=dict)
 async def get_profile(current_user: User = Depends(get_current_active_user)):
@@ -193,7 +190,9 @@ async def download_document(doc_id: int, current_user: User = Depends(get_curren
     doc = db.query(TeacherDocument).filter(
         TeacherDocument.id == doc_id,
         TeacherDocument.user_id == current_user.id
-    ).first_or_404()
+    ).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
     
     signed_url = get_signed_url(doc.filename, expires_in=300)
     if signed_url:
