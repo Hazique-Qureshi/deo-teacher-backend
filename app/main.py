@@ -31,6 +31,8 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
 # HTTPS Redirect Middleware
 class HTTPSRedirectMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):
+        if request.url.path == "/health":
+            return await call_next(request)
         if request.url.scheme == "http" and request.url.hostname not in ("localhost", "127.0.0.1", "0.0.0.0"):
             url = request.url.replace(scheme="https")
             return Response(status_code=301, headers={"Location": str(url)})
