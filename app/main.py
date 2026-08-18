@@ -50,7 +50,7 @@ class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
             return Response("Request too large", status_code=413)
         return await call_next(request)
 
-port = int(os.getenv("PORT", 10000))
+port = int(os.getenv("PORT", 8000))
 
 try:
     Base.metadata.create_all(bind=engine)
