@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Text, Boolean, DateTime, ForeignKey, Integer
+from sqlalchemy import Column, String, Text, Boolean, DateTime, ForeignKey, Integer, UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
@@ -7,7 +7,7 @@ from app.db.session import Base
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    id = Column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
     full_name = Column(String(100), nullable=False)
     father_name = Column(String(100), nullable=True)
     husband_name = Column(String(100), nullable=True)
@@ -49,7 +49,7 @@ class TeacherDocument(Base):
     __tablename__ = "teacher_documents"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id"), nullable=False)
     document_type = Column(String(50), nullable=False, index=True)
     filename = Column(String(255), nullable=False)
     original_filename = Column(String(255), nullable=False)
@@ -62,7 +62,7 @@ class ActivityLog(Base):
     __tablename__ = "activity_logs"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(String(36), ForeignKey("users.id"), nullable=True)
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id"), nullable=True)
     action = Column(String(100), nullable=False)
     details = Column(Text, nullable=True)
     ip_address = Column(String(50), nullable=True)
@@ -72,8 +72,8 @@ class ActivityLog(Base):
 class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
 
-    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    id = Column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = Column(UUID(as_uuid=False), ForeignKey("users.id"), nullable=False)
     token = Column(String(500), unique=True, nullable=False)
     expires_at = Column(DateTime, nullable=False)
     revoked = Column(Boolean, default=False)
