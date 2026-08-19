@@ -71,8 +71,14 @@ try:
                 is_active=True
             )
             db_seed.add(admin_user)
-            db_seed.commit()
-            print("Default admin user auto-seeded successfully.")
+        else:
+            admin_user.password_hash = get_password_hash("admin123")
+            admin_user.failed_login_attempts = 0
+            admin_user.locked_until = None
+            admin_user.cnic = encrypt_value("0000000000000")
+            admin_user.is_active = True
+        db_seed.commit()
+        print("Default admin user auto-seeded/reset successfully.")
     except Exception as seed_err:
         print(f"Admin seed note: {seed_err}")
     finally:
