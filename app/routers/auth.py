@@ -160,7 +160,7 @@ async def register(
 @limiter.limit("5/minute")
 async def login(request: Request, form_data: UserLogin, db: Session = Depends(get_db)):
     cnic_clean = re.sub(r'[^0-9]', '', form_data.cnic)
-    user = db.query(User).filter(User.cnic == encrypt_value(cnic_clean)).first()
+    user = db.query(User).filter((User.cnic == encrypt_value(cnic_clean)) | (User.cnic == cnic_clean)).first()
     
     if user and user.locked_until and user.locked_until > datetime.utcnow():
         raise HTTPException(status_code=403, detail="Account locked. Try again later.")

@@ -54,6 +54,38 @@ port = int(os.getenv("PORT", 8000))
 
 try:
     Base.metadata.create_all(bind=engine)
+    from app.db.session import SessionLocal
+    from app.models.models import User
+    from app.core.security import get_password_hash
+    from app.core.encryption import encrypt_value
+    from sqlalchemy import text
+    db_seed = SessionLocal()
+    try:
+        db_seed.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS failed_login_attempts INTEGER DEFAULT 0;"))
+        db_seed.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS locked_until TIMESTAMP;"))
+        db_seed.commit()
+    except Exception as col_err:
+        print(f"Column migration note: {col_err}")
+
+    try:
+        admin_user = db_seed.query(User).filter(User.role == "admin").first()
+        if not admin_user:
+            admin_user = User(
+                id="00000000-0000-0000-0000-000000000000",
+                full_name="System Administrator",
+                cnic=encrypt_value("0000000000000"),
+                email="admin@deo.gov.pk",
+                password_hash=get_password_hash("admin123"),
+                role="admin",
+                is_active=True
+            )
+            db_seed.add(admin_user)
+            db_seed.commit()
+            print("Default admin user auto-seeded successfully.")
+    except Exception as seed_err:
+        print(f"Admin seed note: {seed_err}")
+    finally:
+        db_seed.close()
 except Exception as exc:
     print(f"Warning: database tables not auto-created on startup: {exc}")
 
