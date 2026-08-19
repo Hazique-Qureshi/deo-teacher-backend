@@ -28,15 +28,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
         return response
 
-# HTTPS Redirect Middleware
-class HTTPSRedirectMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request, call_next):
-        if request.url.path == "/health":
-            return await call_next(request)
-        if request.url.scheme == "http" and request.url.hostname not in ("localhost", "127.0.0.1", "0.0.0.0"):
-            url = request.url.replace(scheme="https")
-            return Response(status_code=301, headers={"Location": str(url)})
-        return await call_next(request)
 
 # Request Size Limit Middleware
 class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
@@ -98,7 +89,6 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Security Middleware
 app.add_middleware(SecurityHeadersMiddleware)
-app.add_middleware(HTTPSRedirectMiddleware)
 app.add_middleware(RequestSizeLimitMiddleware, max_size=10 * 1024 * 1024)
 app.add_middleware(GZipMiddleware, minimum_size=1000)
 
