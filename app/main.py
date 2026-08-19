@@ -54,6 +54,7 @@ try:
     try:
         db_seed.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS failed_login_attempts INTEGER DEFAULT 0;"))
         db_seed.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS locked_until TIMESTAMP;"))
+        db_seed.execute(text("ALTER TABLE activity_logs ADD COLUMN IF NOT EXISTS user_agent VARCHAR(500);"))
         db_seed.commit()
     except Exception as col_err:
         print(f"Column migration note: {col_err}")
