@@ -209,3 +209,9 @@ async def get_completion(current_user: User = Depends(get_current_active_user)):
     completed = total - len(missing_fields) - len(missing_docs)
     percentage = round((completed / total) * 100) if total else 0
     return CompletionResponse(missing_profile_fields=missing_fields, missing_documents=missing_docs, completion_percentage=percentage)
+
+@router.get("/global-stats")
+async def get_global_stats(db: Session = Depends(get_db)):
+    total_teachers = db.query(User).filter(User.role == "teacher").count()
+    return {"total_teachers": total_teachers}
+
