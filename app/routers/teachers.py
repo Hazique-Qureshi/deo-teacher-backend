@@ -205,9 +205,9 @@ async def get_completion(current_user: User = Depends(get_current_active_user)):
     missing_fields = [f for f in REQUIRED_PROFILE_FIELDS if not getattr(current_user, f)]
     uploaded_types = {d.document_type for d in current_user.documents}
     missing_docs = [DOCUMENT_TYPES[t] for t in REQUIRED_DOCUMENT_TYPES if t not in uploaded_types]
-    total = len(REQUIRED_PROFILE_FIELDS) + len(REQUIRED_DOCUMENT_TYPES)
-    completed = total - len(missing_fields) - len(missing_docs)
-    percentage = round((completed / total) * 100) if total else 0
+    total_docs = len(REQUIRED_DOCUMENT_TYPES)
+    completed_docs = len(REQUIRED_DOCUMENT_TYPES) - len(missing_docs)
+    percentage = round((completed_docs / total_docs) * 100) if total_docs else 0
     return CompletionResponse(missing_profile_fields=missing_fields, missing_documents=missing_docs, completion_percentage=percentage)
 
 @router.get("/global-stats")
