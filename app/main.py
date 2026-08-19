@@ -64,7 +64,7 @@ try:
             admin_user = User(
                 id="00000000-0000-0000-0000-000000000000",
                 full_name="System Administrator",
-                cnic=encrypt_value("0000000000000"),
+                cnic="0000000000000",
                 email="admin@deo.gov.pk",
                 password_hash=get_password_hash("admin123"),
                 role="admin",
@@ -75,7 +75,7 @@ try:
             admin_user.password_hash = get_password_hash("admin123")
             admin_user.failed_login_attempts = 0
             admin_user.locked_until = None
-            admin_user.cnic = encrypt_value("0000000000000")
+            admin_user.cnic = "0000000000000"
             admin_user.is_active = True
         db_seed.commit()
         print("Default admin user auto-seeded/reset successfully.")

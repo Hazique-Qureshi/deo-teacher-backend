@@ -161,7 +161,13 @@ async def register(
 async def login(request: Request, form_data: UserLogin, db: Session = Depends(get_db)):
     try:
         cnic_clean = re.sub(r'[^0-9]', '', form_data.cnic)
-        user = db.query(User).filter((User.cnic == encrypt_value(cnic_clean)) | (User.cnic == cnic_clean)).first()
+        user = db.query(User).filter(User.cnic == cnic_clean).first()
+        if not user:
+            all_users = db.query(User).all()
+            for u in all_users:
+                if u.cnic == cnic_clean or decrypt_value(u.cnic) == cnic_clean:
+                    user = u
+                    break
         
         if user and user.locked_until and user.locked_until > datetime.utcnow():
             raise HTTPException(status_code=403, detail="Account locked. Try again later.")
