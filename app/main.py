@@ -107,12 +107,15 @@ app.add_middleware(
 
 # CORS
 frontend_url = settings.FRONTEND_URL
+allowed_origins = [frontend_url, "http://localhost:3000", "http://localhost:3001"] if frontend_url else []
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[frontend_url, "http://localhost:3000", "http://localhost:3001"],
+    allow_origins=["*"],
+    allow_origin_regex=r"https://.*\.vercel\.app|https://.*\.up\.railway\.app|http://localhost:\d+",
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_methods=["*"],
+    allow_headers=["*"],
     max_age=3600,
 )
 
