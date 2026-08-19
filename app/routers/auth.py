@@ -159,40 +159,48 @@ async def register(
 @router.post("/login")
 @limiter.limit("5/minute")
 async def login(request: Request, form_data: UserLogin, db: Session = Depends(get_db)):
-    cnic_clean = re.sub(r'[^0-9]', '', form_data.cnic)
-    user = db.query(User).filter((User.cnic == encrypt_value(cnic_clean)) | (User.cnic == cnic_clean)).first()
-    
-    if user and user.locked_until and user.locked_until > datetime.utcnow():
-        raise HTTPException(status_code=403, detail="Account locked. Try again later.")
-    
-    if not user or not verify_password(form_data.password, user.password_hash):
-        if user:
-            user.failed_login_attempts += 1
-            if user.failed_login_attempts >= MAX_FAILED_ATTEMPTS:
-                user.locked_until = datetime.utcnow() + LOCKOUT_DURATION
-            db.commit()
-        raise HTTPException(status_code=401, detail="Invalid CNIC or password")
-    
-    user.failed_login_attempts = 0
-    user.locked_until = None
-    db.commit()
-    
-    access_token = create_access_token({"sub": user.cnic}, timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
-    refresh_token = create_refresh_token({"sub": user.cnic})
-    
-    refresh_token_obj = RefreshToken(
-        user_id=user.id,
-        token=refresh_token,
-        expires_at=datetime.utcnow() + timedelta(days=30)
-    )
-    db.add(refresh_token_obj)
-    db.commit()
-    
-    log = ActivityLog(user_id=user.id, action="login", details="User logged in", ip_address=request.client.host, user_agent=request.headers.get("user-agent"))
-    db.add(log)
-    db.commit()
-    
-    return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer", "user": UserResponse.from_orm(user)}
+    try:
+        cnic_clean = re.sub(r'[^0-9]', '', form_data.cnic)
+        user = db.query(User).filter((User.cnic == encrypt_value(cnic_clean)) | (User.cnic == cnic_clean)).first()
+        
+        if user and user.locked_until and user.locked_until > datetime.utcnow():
+            raise HTTPException(status_code=403, detail="Account locked. Try again later.")
+        
+        if not user or not verify_password(form_data.password, user.password_hash):
+            if user:
+                user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
+                if user.failed_login_attempts >= MAX_FAILED_ATTEMPTS:
+                    user.locked_until = datetime.utcnow() + LOCKOUT_DURATION
+                db.commit()
+            raise HTTPException(status_code=401, detail="Invalid CNIC or password")
+        
+        user.failed_login_attempts = 0
+        user.locked_until = None
+        db.commit()
+        
+        access_token = create_access_token({"sub": user.cnic}, timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
+        refresh_token = create_refresh_token({"sub": user.cnic})
+        
+        refresh_token_obj = RefreshToken(
+            user_id=user.id,
+            token=refresh_token,
+            expires_at=datetime.utcnow() + timedelta(days=30)
+        )
+        db.add(refresh_token_obj)
+        db.commit()
+        
+        log = ActivityLog(user_id=user.id, action="login", details="User logged in", ip_address=request.client.host if request.client else None, user_agent=request.headers.get("user-agent"))
+        db.add(log)
+        db.commit()
+        
+        user_data = UserResponse.model_validate(user) if hasattr(UserResponse, "model_validate") else UserResponse.from_orm(user)
+        return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer", "user": user_data}
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Login Error: {str(e)}")
 
 @router.post("/refresh", response_model=Token)
 async def refresh_token(request: Request, refresh_token: str = Form(...), db: Session = Depends(get_db)):
